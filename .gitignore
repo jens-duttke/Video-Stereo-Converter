@@ -1,0 +1,12 @@
+# Folders
+/Include/
+/Lib/
+/private/
+/Scripts/
+/share/
+
+# Files
+.DS_Store
+*.log
+*.py[cod]
+pyvenv.cfg
