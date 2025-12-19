@@ -18,8 +18,10 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from pathlib import Path
 from typing import List, Tuple
 
+from tqdm import tqdm
+
 from helper.config_manager import ConfigError, get_path, load_config
-from helper.ffmpeg_utils import get_video_framerate, parse_framerate
+from helper.ffmpeg_utils import get_video_duration, get_video_framerate, parse_framerate
 
 
 def _find_video_chunks(input_path: Path) -> List[Tuple[int, int, Path]]:
@@ -212,11 +214,37 @@ def _concatenate_videos(
         print(f'  Output: {output_path.name}')
         print()
 
-        process = subprocess.run(cmd, capture_output=True, text=True)
+        # Calculate total duration for progress bar
+        total_duration = sum(get_video_duration(path) or 0.0 for _, _, path in videos)
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+
+        stderr_output = []
+        current_time = 0.0
+
+        with tqdm(
+            total=total_duration,
+            unit='s',
+            bar_format='  {l_bar}{bar}| {n:.1f}s/{total:.1f}s [{elapsed}<{remaining}]'
+        ) as pbar:
+            for line in process.stderr:
+                stderr_output.append(line)
+                time_match = re.search(r'time=(\d+):(\d+):(\d+\.\d+)', line)
+                if time_match:
+                    hours = int(time_match.group(1))
+                    minutes = int(time_match.group(2))
+                    seconds = float(time_match.group(3))
+                    new_time = hours * 3600 + minutes * 60 + seconds
+                    if new_time > current_time:
+                        pbar.update(new_time - current_time)
+                        current_time = new_time
+
+        process.wait()
 
         if process.returncode != 0:
             print('ERROR: ffmpeg failed!')
-            print(f'stderr: {process.stderr[-1000:]}')
+            error_text = ''.join(stderr_output[-20:])
+            print(f'stderr: {error_text[-1000:]}')
             return False
 
         if not output_path.exists() or output_path.stat().st_size == 0:
