@@ -387,16 +387,16 @@ def main():
         print(f'Done! Video created: {output_name}')
         # Delete SBS files if free_space mode is 'sbs'
         if free_space_mode == 'sbs':
-            deleted_count = 0
             # Keep the last frame for the next chunk (to maintain overlap)
             frames_to_delete = frames_to_process[:-1] if len(frames_to_process) > 1 else []
-            for _, sbs_path in frames_to_delete:
-                try:
-                    sbs_path.unlink(missing_ok=True)
-                    deleted_count += 1
-                except OSError:
-                    pass  # Ignore deletion errors
-            if deleted_count > 0:
+            if frames_to_delete:
+                deleted_count = 0
+                for _, sbs_path in tqdm(frames_to_delete, desc='Deleting SBS files', unit='file', bar_format='  {l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_noinv_fmt}]'):
+                    try:
+                        sbs_path.unlink(missing_ok=True)
+                        deleted_count += 1
+                    except OSError:
+                        pass  # Ignore deletion errors
                 print(f'Deleted {deleted_count} SBS files to free space (kept last frame for next chunk).')
     else:
         print('ERROR: Video creation failed!')
