@@ -10,6 +10,8 @@ Usage:
     python video_concatenator.py "D:/Video-Processing/workflow"
 """
 
+import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
+
 import re
 import subprocess
 import sys

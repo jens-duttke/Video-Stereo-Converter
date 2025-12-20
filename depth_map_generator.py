@@ -11,6 +11,8 @@ Usage:
     python depth_map_generator.py "D:/Video-Processing/workflow" --cpu --batch-size 4
 """
 
+import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
+
 import glob
 import os
 import threading

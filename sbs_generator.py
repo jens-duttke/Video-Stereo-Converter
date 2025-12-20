@@ -11,6 +11,8 @@ Usage:
     python sbs_generator.py "D:/Video-Processing/workflow" --cpu
 """
 
+import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
+
 import threading
 import time
 import warnings

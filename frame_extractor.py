@@ -10,6 +10,8 @@ Usage:
     python frame_extractor.py "D:/Video-Processing/workflow"
 """
 
+import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
+
 import argparse
 import re
 import subprocess

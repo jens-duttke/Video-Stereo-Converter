@@ -10,6 +10,8 @@ Usage:
     python workflow_init.py --input-video "C:/Videos/input.mkv" --workflow-dir "D:/Video-Processing/workflow"
 """
 
+import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
+
 import argparse
 import sys
 from pathlib import Path
