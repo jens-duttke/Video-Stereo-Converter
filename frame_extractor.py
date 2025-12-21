@@ -16,6 +16,7 @@ import argparse
 import re
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 from tqdm import tqdm
@@ -88,8 +89,15 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        universal_newlines=True
+        text=True,
+        encoding='utf-8',
+        errors='replace'
     )
+
+    # Read stderr in background thread to avoid deadlock (buffer full while reading stdout)
+    stderr_output: list[str] = []
+    stderr_thread = threading.Thread(target=lambda: stderr_output.append(process.stderr.read()), daemon=True)
+    stderr_thread.start()
 
     frame_pattern = re.compile(r'^frame=(\d+)')
     bar_format = '{l_bar}{bar}| {n_fmt}/~{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]'
@@ -111,9 +119,10 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
                     pbar.set_postfix_str(f'Frame: {current_frame}')
 
     process.wait()
+    stderr_thread.join()
 
     if process.returncode != 0:
-        stderr = process.stderr.read()
+        stderr = stderr_output[0] if stderr_output else ''
         print(f'ERROR: FFmpeg failed!')
         print(f'stderr: {stderr[-1000:]}')
         return False
