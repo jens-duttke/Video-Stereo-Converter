@@ -249,7 +249,7 @@ class ControlPanel:
         self.convergence = tk.DoubleVar(value=stereo['convergence'])
         self.super_sampling = tk.DoubleVar(value=stereo['super_sampling'])
         self.edge_softness = tk.DoubleVar(value=stereo['edge_softness'])
-        self.smoothing_strength = tk.DoubleVar(value=stereo['smoothing_strength'])
+        self.artifact_smoothing = tk.DoubleVar(value=stereo['artifact_smoothing'])
         self.depth_gamma = tk.DoubleVar(value=stereo['depth_gamma'])
         self.sharpen = tk.DoubleVar(value=stereo['sharpen'])
 
@@ -272,7 +272,7 @@ class ControlPanel:
             convergence=self.convergence.get(),
             super_sampling=self.super_sampling.get(),
             edge_softness=self.edge_softness.get(),
-            smoothing_strength=self.smoothing_strength.get(),
+            artifact_smoothing=self.artifact_smoothing.get(),
             depth_gamma=self.depth_gamma.get(),
             sharpen=self.sharpen.get(),
         )
@@ -354,7 +354,7 @@ class ControlPanel:
         self._create_slider(param_frame, 1, 'Convergence', self.convergence, -50, 50, 1.0, 'Focal plane shift (+closer, -further)')
         self._create_slider(param_frame, 2, 'Super Sampling', self.super_sampling, 1.0, 4.0, 0.1, 'Internal upscale factor (1.0-3.0 optimal)')
         self._create_slider(param_frame, 3, 'Edge Softness', self.edge_softness, 0, 30, 0.5, 'Depth edge softening (0-30)')
-        self._create_slider(param_frame, 4, 'Smoothing', self.smoothing_strength, 0, 5, 0.1, 'Warping artifact smoothing (0-5)')
+        self._create_slider(param_frame, 4, 'Artifact Smoothing', self.artifact_smoothing, 0, 5, 0.1, 'Warping artifact smoothing (0-5)')
         self._create_slider(param_frame, 5, 'Depth Gamma', self.depth_gamma, 0.1, 2.0, 0.05, 'Gamma correction (0.2-0.5 optimal)')
         self._create_slider(param_frame, 6, 'Sharpen', self.sharpen, 0, 16, 0.5, 'Unsharp mask strength (0.5-16)')
 
@@ -503,7 +503,7 @@ class ControlPanel:
             'convergence': params.convergence,
             'super_sampling': params.super_sampling,
             'edge_softness': params.edge_softness,
-            'smoothing_strength': params.smoothing_strength,
+            'artifact_smoothing': params.artifact_smoothing,
             'depth_gamma': params.depth_gamma,
             'sharpen': params.sharpen,
         }

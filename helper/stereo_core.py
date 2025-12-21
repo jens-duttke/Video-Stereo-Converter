@@ -195,7 +195,7 @@ class StereoParams:
     convergence: float = 0.0
     super_sampling: float = 3.0
     edge_softness: float = 20.0
-    smoothing_strength: float = 1.0
+    artifact_smoothing: float = 1.0
     depth_gamma: float = 0.2
     sharpen: float = 14.0
 
@@ -267,8 +267,8 @@ class StereoGenerator:
 
         left_warped, left_mask, right_warped, right_mask = forward_warp_stereo(rgb_t, depth_norm, p.max_disparity)
 
-        left = self._postprocess_view(left_warped, left_mask, p.smoothing_strength)
-        right = self._postprocess_view(right_warped, right_mask, p.smoothing_strength)
+        left = self._postprocess_view(left_warped, left_mask, p.artifact_smoothing)
+        right = self._postprocess_view(right_warped, right_mask, p.artifact_smoothing)
 
         base_crop_offset = (stretched_w - original_w) // 2
         convergence_shift = int(round(p.convergence))
@@ -382,7 +382,7 @@ class StereoGenerator:
         blur_kernel = max(5, min(int(edge_softness * 6) | 1, 31))
         return gaussian_blur2d(depth, (blur_kernel, blur_kernel), (edge_softness, edge_softness))
 
-    def _smooth_warping_artifacts(self, image: torch.Tensor, smoothing_strength: float) -> torch.Tensor:
+    def _smooth_warping_artifacts(self, image: torch.Tensor, artifact_smoothing: float) -> torch.Tensor:
         """
         Smooth warping artifacts using fast OpenCV bilateral filter.
 
@@ -390,7 +390,7 @@ class StereoGenerator:
         ----------
         image : torch.Tensor
             Input image tensor.
-        smoothing_strength : float
+        artifact_smoothing : float
             Strength of smoothing.
 
         Returns
@@ -404,8 +404,8 @@ class StereoGenerator:
         else:
             image_np = (image_np * 255).astype(np.uint8)
 
-        d = max(5, min(int(smoothing_strength * 4), 15))
-        filtered_np = cv2.bilateralFilter(image_np, d=d, sigmaColor=30, sigmaSpace=smoothing_strength * 25)
+        d = max(5, min(int(artifact_smoothing * 4), 15))
+        filtered_np = cv2.bilateralFilter(image_np, d=d, sigmaColor=30, sigmaSpace=artifact_smoothing * 25)
         filtered = torch.from_numpy(filtered_np).permute(2, 0, 1).unsqueeze(0).float()
         return filtered.to(image.device)
 
@@ -454,7 +454,7 @@ class StereoGenerator:
         inpaint_mask_np = cv2.dilate(inpaint_mask_np, kernel, iterations=1)
         return cv2.inpaint(image_np, inpaint_mask_np, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
 
-    def _postprocess_view(self, warped: torch.Tensor, valid_mask: torch.Tensor, smoothing_strength: float) -> torch.Tensor:
+    def _postprocess_view(self, warped: torch.Tensor, valid_mask: torch.Tensor, artifact_smoothing: float) -> torch.Tensor:
         """
         Apply smoothing and inpainting to a warped view.
 
@@ -464,7 +464,7 @@ class StereoGenerator:
             Warped image tensor.
         valid_mask : torch.Tensor
             Mask of valid pixels.
-        smoothing_strength : float
+        artifact_smoothing : float
             Strength of smoothing.
 
         Returns
@@ -474,8 +474,8 @@ class StereoGenerator:
         """
         inpaint_mask_np = ((1 - valid_mask.squeeze(0)) * 255).permute(1, 2, 0).cpu().numpy().astype(np.uint8)
 
-        if smoothing_strength > 0:
-            warped = self._smooth_warping_artifacts(warped, smoothing_strength)
+        if artifact_smoothing > 0:
+            warped = self._smooth_warping_artifacts(warped, artifact_smoothing)
 
         result_np = self._to_numpy_uint8(warped)
         result_np = self._inpaint_missing_regions(result_np, inpaint_mask_np)

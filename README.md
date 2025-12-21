@@ -159,7 +159,7 @@ The workflow configuration file contains all processing parameters:
         "convergence": 0.0,
         "super_sampling": 3.0,
         "edge_softness": 20.0,
-        "smoothing_strength": 1.0,
+        "artifact_smoothing": 1.0,
         "depth_gamma": 0.2,
         "sharpen": 14.0
     },
@@ -190,7 +190,7 @@ The workflow configuration file contains all processing parameters:
 - `convergence` - Focal plane shift (positive = pop-out, negative = sink-in)
 - `super_sampling` - Internal upscale factor (recommended: 1.0-3.0)
 - `edge_softness` - Depth edge softening strength (recommended: 0-20)
-- `smoothing_strength` - Warping artifact smoothing (recommended: 0-5)
+- `artifact_smoothing` - Warping artifact smoothing (recommended: 0-5)
 - `depth_gamma` - Depth gamma correction (recommended: 0.2-0.5)
 - `sharpen` - Unsharp mask strength (recommended: 0.5-16.0)
 

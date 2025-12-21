@@ -132,7 +132,7 @@ def main() -> None:
         convergence=stereo_config['convergence'],
         super_sampling=stereo_config['super_sampling'],
         edge_softness=stereo_config['edge_softness'],
-        smoothing_strength=stereo_config['smoothing_strength'],
+        artifact_smoothing=stereo_config['artifact_smoothing'],
         depth_gamma=stereo_config['depth_gamma'],
         sharpen=stereo_config['sharpen']
     )
@@ -167,7 +167,7 @@ def main() -> None:
 
     print(f'Parameters: disparity={params.max_disparity}, convergence={params.convergence}, '
           f'super_sampling={params.super_sampling}, edge_softness={params.edge_softness}, '
-          f'smoothing={params.smoothing_strength}, gamma={params.depth_gamma}, sharpen={params.sharpen}')
+          f'smoothing={params.artifact_smoothing}, gamma={params.depth_gamma}, sharpen={params.sharpen}')
 
     # Free space config
     free_space_mode = config.get('free_space', {}).get('sbs_generator', 'none')

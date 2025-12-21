@@ -45,7 +45,7 @@ CONFIG_SCHEMA = {
             'convergence': {'type': float, 'example': 0.0},
             'super_sampling': {'type': float, 'example': 3.0},
             'edge_softness': {'type': float, 'example': 20.0},
-            'smoothing_strength': {'type': float, 'example': 1.0},
+            'artifact_smoothing': {'type': float, 'example': 1.0},
             'depth_gamma': {'type': float, 'example': 0.2},
             'sharpen': {'type': float, 'example': 14.0},
         }
@@ -259,7 +259,7 @@ def create_default_config(input_video: Path) -> dict:
             'convergence': defaults.convergence,
             'super_sampling': defaults.super_sampling,
             'edge_softness': defaults.edge_softness,
-            'smoothing_strength': defaults.smoothing_strength,
+            'artifact_smoothing': defaults.artifact_smoothing,
             'depth_gamma': defaults.depth_gamma,
             'sharpen': defaults.sharpen,
         },
@@ -422,7 +422,7 @@ def merge_cli_args(config: dict, cli_args: dict) -> dict:
         'convergence': ('stereo', 'convergence'),
         'super_sampling': ('stereo', 'super_sampling'),
         'edge_softness': ('stereo', 'edge_softness'),
-        'smoothing_strength': ('stereo', 'smoothing_strength'),
+        'artifact_smoothing': ('stereo', 'artifact_smoothing'),
         'depth_gamma': ('stereo', 'depth_gamma'),
         'sharpen': ('stereo', 'sharpen'),
     }
