@@ -4,7 +4,6 @@ from pathlib import Path
 
 __all__ = [
     'get_video_framerate',
-    'get_video_frame_count',
     'get_video_duration',
     'parse_framerate',
     'estimate_frame_count',
@@ -64,39 +63,6 @@ def get_video_framerate(video_path: Path | str) -> str | None:
         return None
 
 
-def get_video_frame_count(video_path: Path | str) -> int | None:
-    """
-    Get total frame count from video using ffprobe.
-
-    Uses nb_read_frames which requires decoding all frames (slow but accurate).
-
-    Parameters
-    ----------
-    video_path : Path or str
-        Path to the video file.
-
-    Returns
-    -------
-    int or None
-        Total frame count, or None if detection fails.
-    """
-    cmd = [
-        'ffprobe',
-        '-v', 'error',
-        '-select_streams', 'v:0',
-        '-count_frames',
-        '-show_entries', 'stream=nb_read_frames',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
-        str(video_path)
-    ]
-
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return int(result.stdout.strip())
-    except (subprocess.CalledProcessError, ValueError):
-        return None
-
-
 def get_video_duration(video_path: Path | str) -> float | None:
     """
     Get video duration in seconds using ffprobe.
@@ -130,7 +96,9 @@ def estimate_frame_count(video_path: Path | str) -> int | None:
     """
     Estimate frame count from video duration and framerate.
 
-    Faster than get_video_frame_count but less accurate.
+    Calculating the exact frame count requires decoding all frames, which takes as long as
+    processing the entire video. This estimation using duration * framerate is very accurate
+    (typically within ±1 frame for CFR videos) and returns instantly.
 
     Parameters
     ----------

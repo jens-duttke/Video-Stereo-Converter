@@ -21,7 +21,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from helper.config_manager import ConfigError, get_path, load_config
-from helper.ffmpeg_utils import estimate_frame_count, get_video_frame_count
+from helper.ffmpeg_utils import estimate_frame_count
 
 
 def extract_frames(workflow_path: Path, config: dict) -> bool:
@@ -59,17 +59,13 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
     # Try to get frame count for progress bar
     print(f'Analyzing video: {input_video.name}')
 
-    # Try exact count first, fallback to estimation
-    frame_count = get_video_frame_count(input_video)
+    # Use estimation (fast) - tqdm will adjust if actual count differs
+    frame_count = estimate_frame_count(input_video)
     if frame_count:
-        print(f'Frame count: {frame_count}')
+        print(f'Estimated frames: {frame_count}')
     else:
-        frame_count = estimate_frame_count(input_video)
-        if frame_count:
-            print(f'Estimated frames: {frame_count}')
-        else:
-            print('Could not determine frame count, progress will be estimated.')
-            frame_count = 0
+        print('Could not determine frame count, progress will be estimated.')
+        frame_count = 0
 
     # Build FFmpeg command
     output_pattern = frames_dir / 'frame_%06d.png'
@@ -96,7 +92,7 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
     )
 
     frame_pattern = re.compile(r'^frame=(\d+)')
-    bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]'
+    bar_format = '{l_bar}{bar}| {n_fmt}/~{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]'
 
     with tqdm(total=frame_count if frame_count > 0 else None, unit='frame', bar_format=bar_format) as pbar:
         current_frame = 0
@@ -106,6 +102,10 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
             if match:
                 new_frame = int(match.group(1))
                 if new_frame > current_frame:
+                    # Dynamically extend progress bar if actual count exceeds estimate
+                    if pbar.total and new_frame > pbar.total:
+                        pbar.total = new_frame
+                        pbar.refresh()
                     pbar.update(new_frame - current_frame)
                     current_frame = new_frame
                     pbar.set_postfix_str(f'Frame: {current_frame}')
