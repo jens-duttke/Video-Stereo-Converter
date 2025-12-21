@@ -6,6 +6,9 @@ Chunk Generator
 Creates video chunks from SBS PNG sequences.
 Reads encoding settings and input video for framerate from workflow config.json.
 
+NOTE: Resuming is not supported here. If interrupted, the whole chunk must be re-encoded again.
+Use the --end-frame parameter to process in smaller chunks if needed.
+
 Usage:
     python chunk_generator.py "D:/Video-Processing/workflow"
     python chunk_generator.py "D:/Video-Processing/workflow" --end-frame 5000
@@ -266,6 +269,9 @@ def main():
         formatter_class=RawDescriptionHelpFormatter,
         description='Chunk Generator - Create video chunks from SBS images',
         epilog=(
+            'Note: If interrupted, the whole chunk must be re-encode again.\n'
+            'Use --end-frame to process in smaller chunks if needed.\n'
+            '\n'
             'Example:\n'
             '  python chunk_generator.py "D:/Video-Processing/workflow"\n'
             '  python chunk_generator.py "D:/Video-Processing/workflow" --end-frame 5000\n'
@@ -380,6 +386,9 @@ def main():
     output_path = chunks_dir / output_name
 
     print(f'Frame range: {start_frame_num} - {end_frame_num} ({len(frames_to_process)} frames)')
+    print()
+    print('\033[36mNote: If interrupted, the whole chunk must be re-encoded chunk again.\033[0m')
+    print()
 
     success = _create_video_clip(frames_to_process, output_path, framerate, crf, preset)
 
