@@ -123,12 +123,53 @@ def _get_output_path(input_filename: str, output_dir: Path, use_16bit: bool) -> 
     return str(output_dir / f'depth_{base_name}{ext}')
 
 
+def _verify_written_file(output_path: str, expected_shape: Tuple[int, int], is_16bit: bool) -> bool:
+    """
+    Verify that a written image file is readable and has correct properties.
+
+    Parameters
+    ----------
+    output_path : str
+        Path to the written file.
+    expected_shape : tuple of int
+        Expected image dimensions (width, height).
+    is_16bit : bool
+        Whether file should be 16-bit.
+
+    Returns
+    -------
+    bool
+        True if file is valid, False otherwise.
+    """
+    try:
+        with suppress_cv2_logging():
+            img = cv2.imread(output_path, cv2.IMREAD_UNCHANGED)
+
+        if img is None:
+            return False
+
+        if img.shape[1] != expected_shape[0] or img.shape[0] != expected_shape[1]:
+            return False
+
+        if is_16bit and img.dtype != np.uint16:
+            return False
+
+        if not is_16bit and img.dtype != np.uint8:
+            return False
+
+        return True
+    except Exception:
+        return False
+
+
 def _save_depth_map(depth_map: np.ndarray, original_size: Tuple[int, int], output_path: str) -> bool:
     """
-    Normalize and save depth map.
+    Normalize, save and verify depth map.
 
     For 8-bit, depth maps are saved as PNG.
     For 16-bit, depth maps are saved as 16-bit TIFF with DEFLATE compression.
+    In rare cases, written TIF files were observed to be corrupted, so after writing,
+    the file is read back to verify integrity.
 
     Parameters
     ----------
@@ -142,7 +183,7 @@ def _save_depth_map(depth_map: np.ndarray, original_size: Tuple[int, int], outpu
     Returns
     -------
     bool
-        True if save was successful, False otherwise.
+        True if save and verification were successful, False otherwise.
     """
     depth_map_resized = cv2.resize(depth_map.astype(np.float32), original_size, interpolation=cv2.INTER_LINEAR)
 
@@ -154,7 +195,9 @@ def _save_depth_map(depth_map: np.ndarray, original_size: Tuple[int, int], outpu
         depth_map_resized = (depth_map_resized - depth_min) / depth_range
 
         ext = Path(output_path).suffix.lower()
-        if ext == '.tif':
+        is_16bit = (ext == '.tif')
+
+        if is_16bit:
             depth_map_16 = (depth_map_resized * 65535).round().astype(np.uint16)
             with suppress_cv2_logging():
                 result = cv2.imwrite(output_path, depth_map_16, [cv2.IMWRITE_TIFF_COMPRESSION, cv2.IMWRITE_TIFF_COMPRESSION_DEFLATE])
@@ -163,7 +206,17 @@ def _save_depth_map(depth_map: np.ndarray, original_size: Tuple[int, int], outpu
             with suppress_cv2_logging():
                 result = cv2.imwrite(output_path, depth_map_8)
 
-        return result
+        if not result:
+            return False
+
+        if not _verify_written_file(output_path, original_size, is_16bit):
+            try:
+                os.remove(output_path)
+            except OSError:
+                pass
+            return False
+
+        return True
 
     return False
 
