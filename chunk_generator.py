@@ -183,6 +183,23 @@ def _parse_ffmpeg_frame(line: str) -> int | None:
     return None
 
 
+def _cleanup_partial_video(output_path: Path) -> None:
+    """
+    Delete partial/incomplete video file if it exists.
+
+    Parameters
+    ----------
+    output_path : Path
+        Path to the video file to delete.
+    """
+    if output_path.exists():
+        try:
+            output_path.unlink()
+            print(f'\nCleaned up partial video file: {output_path.name}')
+        except OSError as e:
+            print(f'\nWarning: Could not delete partial video file: {e}')
+
+
 def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framerate: str, crf: int, preset: str) -> bool:
     """
     Create a video from a frame sequence with progress bar.
@@ -229,39 +246,62 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
     print(f'  Creating video: {output_path.name}')
     print(f'  Frames: {total_frames}, Framerate: {framerate}, CRF: {crf}, Preset: {preset}')
 
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        bufsize=1
-    )
+    process = None
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1
+        )
 
-    stderr_output = []
-    current_frame = 0
+        stderr_output = []
+        current_frame = 0
 
-    with tqdm(total=total_frames, unit='frame', bar_format='  {l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_noinv_fmt}]') as pbar:
-        for line in process.stderr:
-            stderr_output.append(line)
-            frame = _parse_ffmpeg_frame(line)
-            if frame is not None and frame != current_frame:
-                pbar.update(frame - current_frame)
-                current_frame = frame
+        with tqdm(total=total_frames, unit='frame', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_noinv_fmt}]', mininterval=0.5) as pbar:
+            for line in process.stderr:
+                stderr_output.append(line)
+                frame = _parse_ffmpeg_frame(line)
+                if frame is not None and frame != current_frame:
+                    pbar.update(frame - current_frame)
+                    current_frame = frame
 
-    process.wait()
+        process.wait()
 
-    if process.returncode != 0:
-        print('ERROR: ffmpeg failed!')
-        error_text = ''.join(stderr_output[-20:])
-        print(f'stderr: {error_text[-500:]}')
+        if process.returncode != 0:
+            print('ERROR: ffmpeg failed!')
+            error_text = ''.join(stderr_output[-20:])
+            print(f'stderr: {error_text[-500:]}')
+            _cleanup_partial_video(output_path)
+            return False
+
+        if not output_path.exists() or output_path.stat().st_size == 0:
+            print('ERROR: Video file was not created or is empty!')
+            _cleanup_partial_video(output_path)
+            return False
+
+        print(f'  Video created: {output_path.stat().st_size / (1024*1024):.1f} MB')
+        return True
+
+    except KeyboardInterrupt:
+        print('\n\nEncoding interrupted by user!')
+        if process:
+            try:
+                process.terminate()
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+        _cleanup_partial_video(output_path)
+        raise  # Re-raise to allow main() to handle it
+
+    except Exception as e:
+        print(f'\nERROR: Unexpected error during encoding: {e}')
+        if process:
+            process.terminate()
+        _cleanup_partial_video(output_path)
         return False
-
-    if not output_path.exists() or output_path.stat().st_size == 0:
-        print('ERROR: Video file was not created or is empty!')
-        return False
-
-    print(f'  Video created: {output_path.stat().st_size / (1024*1024):.1f} MB')
-    return True
 
 
 def main():
@@ -390,7 +430,11 @@ def main():
     print('\033[36mNote: If interrupted, the whole chunk must be re-encoded chunk again.\033[0m')
     print()
 
-    success = _create_video_clip(frames_to_process, output_path, framerate, crf, preset)
+    try:
+        success = _create_video_clip(frames_to_process, output_path, framerate, crf, preset)
+    except KeyboardInterrupt:
+        print('\nOperation cancelled by user.')
+        sys.exit(1)
 
     if success:
         print(f'Done! Video created: {output_name}')
@@ -400,7 +444,7 @@ def main():
             frames_to_delete = frames_to_process[:-1] if len(frames_to_process) > 1 else []
             if frames_to_delete:
                 deleted_count = 0
-                for _, sbs_path in tqdm(frames_to_delete, desc='Deleting SBS files', unit='file', bar_format='  {l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_noinv_fmt}]'):
+                for _, sbs_path in tqdm(frames_to_delete, desc='Deleting SBS files', unit='file', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_noinv_fmt}]', mininterval=0.5):
                     try:
                         sbs_path.unlink(missing_ok=True)
                         deleted_count += 1
