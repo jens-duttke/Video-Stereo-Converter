@@ -410,7 +410,7 @@ def main() -> None:
             save_queue.task_done()
 
     # Process
-    pbar = tqdm(total=len(all_image_files), initial=skipped_count, unit='img', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]')
+    pbar = tqdm(total=len(all_image_files), initial=skipped_count, unit='img', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]', mininterval=0.5)
 
     loader = threading.Thread(target=_loader_thread, daemon=True)
     saver = threading.Thread(target=_saver_thread, daemon=True)

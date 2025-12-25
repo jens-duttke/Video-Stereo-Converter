@@ -224,11 +224,7 @@ def _concatenate_videos(
         stderr_output = []
         current_time = 0.0
 
-        with tqdm(
-            total=total_duration,
-            unit='s',
-            bar_format='  {l_bar}{bar}| {n:.1f}s/{total:.1f}s [{elapsed}<{remaining}]'
-        ) as pbar:
+        with tqdm(total=total_duration, unit='s', bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}s [{elapsed}]', mininterval=0.5) as pbar:
             for line in process.stderr:
                 stderr_output.append(line)
                 time_match = re.search(r'time=(\d+):(\d+):(\d+\.\d+)', line)
