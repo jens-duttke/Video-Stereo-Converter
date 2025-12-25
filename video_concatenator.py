@@ -218,6 +218,10 @@ def _concatenate_videos(
 
         # Calculate total duration for progress bar
         total_duration = sum(get_video_duration(path) or 0.0 for _, _, path in videos)
+        
+        # Ensure total_duration is at least 0.1 to prevent division by zero
+        if total_duration <= 0:
+            total_duration = 0.1
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
@@ -234,7 +238,10 @@ def _concatenate_videos(
                     seconds = float(time_match.group(3))
                     new_time = hours * 3600 + minutes * 60 + seconds
                     if new_time > current_time:
-                        pbar.update(new_time - current_time)
+                        delta = new_time - current_time
+                        # Don't update past total to avoid issues
+                        if current_time + delta <= total_duration + 1:
+                            pbar.update(delta)
                         current_time = new_time
 
         process.wait()
