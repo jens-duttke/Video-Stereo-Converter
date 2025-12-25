@@ -100,9 +100,8 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
     stderr_thread.start()
 
     frame_pattern = re.compile(r'^frame=(\d+)')
-    bar_format = '{l_bar}{bar}| {n_fmt}/~{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]'
 
-    with tqdm(total=frame_count if frame_count > 0 else None, unit='frame', bar_format=bar_format, mininterval=0.5) as pbar:
+    with tqdm(total=frame_count if frame_count > 0 else None, unit='frame', bar_format='{l_bar}{bar}| {n_fmt}/~{total_fmt}{postfix} [{elapsed}<{remaining}, {rate_noinv_fmt}]', mininterval=0.5) as pbar:
         current_frame = 0
 
         for line in process.stdout:
