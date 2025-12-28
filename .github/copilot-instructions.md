@@ -3,41 +3,25 @@ applyTo: "**/*.instructions.md"
 description: "Guidelines for GitHub Copilot custom instruction files"
 ---
 
-# Copilot Instructions Guidelines
+# Effective Instructions
+- **Specific tool choices**: "Use pytest for testing"
+- **Code conventions**: "Prefix private functions with underscore"
+- **Required workflows**: "Run `make lint` before commit"
+- **Tech stack specifics**: "Use Pydantic for validation"
 
-## Structure
-- Global: `.github/copilot-instructions.md` (entire repo)
-- Scoped: `.github/instructions/NAME.instructions.md` (specific patterns)
-
-## Frontmatter (Required for Scoped)
-```yaml
----
-description: 'Purpose (1-500 chars)'
-applyTo: '**/*.py'
----
-```
-
-### applyTo Patterns
-- `'**/*.py'` - all Python files
-- `'**/*.ts, **/*.tsx'` - multiple extensions
-- `'src/**/*.py'` - specific directory
-- `'*'` - all files (avoid unless necessary)
-
-## Content Guidelines
-
-### Effective Instructions
-- Specific tool choices: "Use pytest for testing"
-- Code conventions: "Prefix private functions with underscore"
-- Required workflows: "Run `make lint` before commit"
-- Tech stack specifics: "Use Pydantic for validation"
-
-### Avoid
+# Avoid
 - External file references
 - Tone/style requests for AI responses
 - Response length constraints
 - Overly verbose explanations
 
-## Token Efficiency vs. Clarity
+# Organization Principles
+- **Group thematically**: Keep related rules together under one section
+- **Avoid fragmentation**: Don't create separate sections for closely related concepts
+- **Minimize section overhead**: Each heading costs tokens - use them only when grouping improves clarity
+- **Logical ordering**: Place rules in the sequence they're applied (e.g., imports before usage)
+
+# Token Efficiency vs. Clarity
 - **Balance required**: Instructions cost tokens but must remain clear
 - Be concise but complete - don't sacrifice understanding for brevity
 - Keep all essential rules - removing rules to save tokens defeats the purpose
@@ -45,10 +29,9 @@ applyTo: '**/*.py'
 - Examples only when they clarify non-obvious patterns
 - Target: Clear and actionable, not minimal word count
 
-## Best Practices
+# Best Practices
 - Keep under 2 pages per file (hard limit)
 - Use bullet points for readability
-- Group related rules together
 - Test that instructions are understood correctly
 
 

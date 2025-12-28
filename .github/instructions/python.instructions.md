@@ -5,6 +5,8 @@ applyTo: "**/*.py"
 Apply Python best practices and clean code principles. Only change code relevant to the prompt.
 
 # Type Hints & Documentation
+- Module docstring as very first element in file (title with equals underline, blank line, description)
+- Always include `from __future__ import annotations` as first import (after module docstring)
 - Type hints in function signatures only, not in docstrings
 - numpydoc (NumPy-style) docstrings for all functions and classes
 - Never mention changes, improvements, or type hints in comments or docstrings
