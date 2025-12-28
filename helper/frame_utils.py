@@ -1,3 +1,10 @@
+"""
+Frame Number Extraction
+=======================
+
+Utilities for extracting frame numbers from filenames.
+"""
+
 from __future__ import annotations
 
 import os

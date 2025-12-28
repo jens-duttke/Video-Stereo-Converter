@@ -1,3 +1,10 @@
+"""
+Video Metadata Extraction
+==========================
+
+Utilities for extracting metadata from video files using ffprobe.
+"""
+
 from __future__ import annotations
 
 import subprocess

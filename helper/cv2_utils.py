@@ -1,3 +1,10 @@
+"""
+OpenCV Utilities
+================
+
+Utilities for working with OpenCV.
+"""
+
 from __future__ import annotations
 
 from contextlib import contextmanager
