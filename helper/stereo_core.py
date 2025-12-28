@@ -6,6 +6,8 @@ Shared core functions for stereo image generation.
 Used by both sbs_generator.py and sbs_tester.py.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple

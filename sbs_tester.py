@@ -10,6 +10,8 @@ Usage:
     python sbs_tester.py "D:/Video-Processing/workflow"
 """
 
+from __future__ import annotations
+
 import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
 
 import ctypes

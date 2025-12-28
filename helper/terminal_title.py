@@ -6,6 +6,8 @@ Sets the terminal window title to show the script name and arguments.
 Works on Windows, Linux, and macOS without third-party dependencies.
 """
 
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 

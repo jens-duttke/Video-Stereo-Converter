@@ -6,6 +6,8 @@ Centralized configuration management for workflow-based video processing.
 Provides strict JSON schema validation, config loading/saving, and path resolution.
 """
 
+from __future__ import annotations
+
 import json
 import re
 from pathlib import Path
@@ -42,7 +44,7 @@ CONFIG_SCHEMA = {
         'type': dict,
         'children': {
             'max_disparity': {'type': float, 'example': 50.0},
-            'convergence': {'type': float, 'example': 0.0},
+            'convergence': {'type': float, 'example': -10.0},
             'super_sampling': {'type': float, 'example': 3.0},
             'edge_softness': {'type': float, 'example': 20.0},
             'artifact_smoothing': {'type': float, 'example': 1.0},

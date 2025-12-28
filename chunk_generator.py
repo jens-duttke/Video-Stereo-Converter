@@ -14,6 +14,8 @@ Usage:
     python chunk_generator.py "D:/Video-Processing/workflow" --end-frame 5000
 """
 
+from __future__ import annotations
+
 import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
 
 import re
