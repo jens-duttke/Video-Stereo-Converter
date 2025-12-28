@@ -194,7 +194,7 @@ def forward_warp_stereo(image: torch.Tensor, depth: torch.Tensor, max_disparity:
 class StereoParams:
     """Parameters for stereo image generation."""
     max_disparity: float = 50.0
-    convergence: float = 0.0
+    convergence: float = -10.0
     super_sampling: float = 3.0
     edge_softness: float = 20.0
     artifact_smoothing: float = 1.0

@@ -156,7 +156,7 @@ The workflow configuration file contains all processing parameters:
     },
     "stereo": {
         "max_disparity": 50.0,
-        "convergence": 0.0,
+        "convergence": -10.0,
         "super_sampling": 3.0,
         "edge_softness": 20.0,
         "artifact_smoothing": 1.0,
