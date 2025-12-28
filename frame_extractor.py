@@ -11,6 +11,8 @@ Usage:
 """
 
 from __future__ import annotations
+
+import helper.utf8_console  # noqa: F401 # pyright: ignore[reportUnusedImport]
 import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
 
 import argparse
