@@ -202,7 +202,6 @@ def _concatenate_videos(
         if audio_source:
             cmd.extend(['-map', '1:a?'])
             cmd.extend(['-c:a', 'copy'])
-            cmd.extend(['-shortest'])
 
         cmd.extend(['-c:v', 'copy'])
         cmd.append(str(output_path))
