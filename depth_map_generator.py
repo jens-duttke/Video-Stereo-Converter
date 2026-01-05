@@ -35,7 +35,7 @@ from helper.cv2_utils import suppress_cv2_logging
 from helper.frame_utils import extract_frame_number
 
 
-MODEL_PATH = './models/DepthPro_optimized.onnx'
+MODEL_PATH = './models/DepthPro.onnx'
 
 
 def _preprocess_single(img: np.ndarray, target_height: int, target_width: int) -> np.ndarray:
