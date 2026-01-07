@@ -56,7 +56,6 @@ CONFIG_SCHEMA = {
         'type': dict,
         'children': {
             'save_16bit': {'type': bool, 'example': False},
-            'batch_size': {'type': int, 'example': 1},
         }
     },
     'encoding': {
@@ -267,7 +266,6 @@ def create_default_config(input_video: Path) -> dict:
         },
         'depth': {
             'save_16bit': False,
-            'batch_size': 1,
         },
         'encoding': {
             'crf': 19,
@@ -405,7 +403,7 @@ def merge_cli_args(config: dict, cli_args: dict) -> dict:
         Base configuration dictionary.
     cli_args : dict
         CLI argument dictionary. Keys can be dot-separated for nested values
-        (e.g., 'depth.batch_size') or simple keys that map to known locations.
+        (e.g., 'depth.save_16bit') or simple keys that map to known locations.
 
     Returns
     -------
@@ -416,7 +414,6 @@ def merge_cli_args(config: dict, cli_args: dict) -> dict:
 
     # Simple key mappings to config paths
     key_mappings = {
-        'batch_size': ('depth', 'batch_size'),
         'save_16bit': ('depth', 'save_16bit'),
         'crf': ('encoding', 'crf'),
         'preset': ('encoding', 'preset'),

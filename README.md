@@ -83,7 +83,6 @@ python depth_map_generator.py "D:/Video-Processing/workflow"
 
 Optional parameters:
 - `--cpu` - Force CPU inference
-- `--batch-size N` - Override batch size from config
 - `--start-frame N` - First frame to process
 - `--end-frame N` - Last frame to process
 
@@ -164,8 +163,7 @@ The workflow configuration file contains all processing parameters:
         "sharpen": 14.0
     },
     "depth": {
-        "save_16bit": false,
-        "batch_size": 1
+        "save_16bit": false
     },
     "encoding": {
         "crf": 19,
@@ -196,7 +194,6 @@ The workflow configuration file contains all processing parameters:
 
 **Depth Generation:**
 - `save_16bit` - Save depth maps as 16-bit TIFF (slightly reduces artifacts, about 10 times larger files)
-- `batch_size` - Inference batch size (higher = more VRAM usage and maybe faster but often slower)
 
 **Video Encoding:**
 - `crf` - Constant Rate Factor for libx265 (lower = higher quality)

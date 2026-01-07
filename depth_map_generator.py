@@ -4,11 +4,11 @@ Depth Map Generator
 ===================
 
 Generates depth maps from RGB frames using ONNX models.
-Supports GPU acceleration via DirectML and configurable batching.
+Supports GPU acceleration via DirectML.
 
 Usage:
     python depth_map_generator.py "D:/Video-Processing/workflow"
-    python depth_map_generator.py "D:/Video-Processing/workflow" --cpu --batch-size 4
+    python depth_map_generator.py "D:/Video-Processing/workflow" --cpu
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ import numpy as np
 import onnxruntime as ort
 from tqdm import tqdm
 
-from helper.config_manager import ConfigError, get_path, load_config, merge_cli_args
+from helper.config_manager import ConfigError, get_path, load_config
 from helper.cv2_utils import suppress_cv2_logging
 from helper.frame_utils import extract_frame_number
 
@@ -232,7 +232,7 @@ def main() -> None:
         epilog=(
             'Example:\n'
             '  python depth_map_generator.py "D:/Video-Processing/workflow"\n'
-            '  python depth_map_generator.py "D:/Video-Processing/workflow" --cpu --batch-size 4\n'
+            '  python depth_map_generator.py "D:/Video-Processing/workflow" --cpu\n'
             '  python depth_map_generator.py "D:/Video-Processing/workflow" --start-frame 100 --end-frame 500\n'
         )
     )
@@ -240,7 +240,6 @@ def main() -> None:
     parser.add_argument('workflow_path', type=Path, help='Path to workflow directory containing config.json')
     parser.add_argument('--start-frame', type=int, default=None, help='First frame to process (inclusive)')
     parser.add_argument('--end-frame', type=int, default=None, help='Last frame to process (inclusive)')
-    parser.add_argument('--batch-size', type=int, default=None, help='Batch size for inference (default from config)')
     parser.add_argument('--cpu', action='store_true', help='Force CPU inference (default auto-detects GPU)')
 
     args = parser.parse_args()
@@ -250,22 +249,17 @@ def main() -> None:
         print(f'ERROR: Workflow directory not found: {args.workflow_path}')
         return
 
-    # Load and merge config
+    # Load config
     try:
         config = load_config(args.workflow_path)
     except ConfigError as e:
         print(f'ERROR: {e}')
         return
 
-    # Merge CLI args (batch_size)
-    cli_overrides = {'batch_size': args.batch_size}
-    config = merge_cli_args(config, cli_overrides)
-
     # Get paths from config
     input_dir = get_path(args.workflow_path, config, 'frames')
     output_dir = get_path(args.workflow_path, config, 'depth_maps')
     use_16bit = config['depth']['save_16bit']
-    batch_size = config['depth']['batch_size']
 
     if not input_dir.exists():
         print(f'ERROR: Frames directory not found: {input_dir}')
@@ -302,7 +296,6 @@ def main() -> None:
 
     provider_name = session.get_providers()[0]
     print(f'Using: {provider_name}' if provider_name != 'CPUExecutionProvider' else f'\033[31mUsing: {provider_name}\033[0m')
-    print(f'Batch Size: {batch_size}')
     print(f'Output Format: {"16-bit TIFF" if use_16bit else "8-bit PNG"}')
 
     # Find image files
@@ -357,16 +350,14 @@ def main() -> None:
         return _preprocess_batch_cpu(images_data, input_height, input_width)
 
     def _loader_thread() -> None:
-        batch_indices = list(range(0, len(image_files), batch_size))
-        for batch_idx in batch_indices:
+        for img_path in image_files:
             if stop_loader.is_set():
                 break
-            batch_files = image_files[batch_idx:batch_idx + batch_size]
             try:
-                batch_data = _load_and_preprocess_batch(batch_files)
+                batch_data = _load_and_preprocess_batch([img_path])
                 load_queue.put(batch_data)
             except Exception as e:
-                print(f'  Error loading batch at {batch_idx}: {e}')
+                print(f'  Error loading {img_path}: {e}')
         load_queue.put(None)
 
     def _saver_thread() -> None:
