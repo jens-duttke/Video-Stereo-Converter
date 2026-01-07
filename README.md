@@ -267,3 +267,10 @@ Most scripts use cross-platform libraries (Python, FFmpeg, OpenCV), but some com
 - Install `onnxruntime-gpu` (CUDA) or `onnxruntime` (CPU) instead of `onnxruntime-directml`
 - The depth map generator auto-detects the best available execution provider
 - The `sbs_tester.py` script uses Windows APIs (`ctypes.windll`, `winsound`) for monitor detection and audio feedback
+
+## License Notice
+
+The depth-estimation model used by this software is licensed under the Apple Machine Learning Research Model License.  
+Use of the model is restricted to non-commercial scientific research and academic purposes only.  
+Using the model in applications for video conversion, entertainment, or other non-research purposes may violate the license.  
+Users are responsible for complying with these terms.
