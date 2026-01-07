@@ -152,12 +152,6 @@ def _validate_dict(data: dict, schema: dict, path_prefix: str, errors: dict) -> 
         example = child_schema.get('example', '')
         errors.setdefault('missing', []).append(f"  '{full_path}' (expected: {expected}, example: {example})")
 
-    # Check for unknown keys
-    unknown = data_keys - schema_keys
-    for key in unknown:
-        full_path = f'{path_prefix}.{key}' if path_prefix else key
-        errors.setdefault('unknown', []).append(f"  '{full_path}'")
-
     # Validate existing keys
     for key in data_keys & schema_keys:
         full_path = f'{path_prefix}.{key}' if path_prefix else key
@@ -198,11 +192,6 @@ def _validate_config(config: dict) -> None:
         example = child_schema.get('example', '')
         errors.setdefault('missing', []).append(f"  '{key}' (expected: {expected}, example: {example})")
 
-    # Check for unknown top-level keys
-    unknown = config_keys - schema_keys
-    for key in unknown:
-        errors.setdefault('unknown', []).append(f"  '{key}'")
-
     # Validate existing top-level keys
     for key in config_keys & schema_keys:
         child_schema = CONFIG_SCHEMA[key]
@@ -221,9 +210,6 @@ def _validate_config(config: dict) -> None:
         if 'wrong_type' in errors:
             msg_parts.append('Wrong type:')
             msg_parts.extend(errors['wrong_type'])
-        if 'unknown' in errors:
-            msg_parts.append('Unknown keys:')
-            msg_parts.extend(errors['unknown'])
 
         raise ConfigError('\n'.join(msg_parts))
 
