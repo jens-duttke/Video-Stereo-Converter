@@ -16,6 +16,7 @@ from __future__ import annotations
 import helper.utf8_console  # noqa: F401 # pyright: ignore[reportUnusedImport]
 import helper.terminal_title  # noqa: F401 # pyright: ignore[reportUnusedImport]
 
+import sys
 import threading
 import time
 import warnings
@@ -35,6 +36,36 @@ from helper.stereo_core import StereoGenerator, StereoParams, load_image_pair
 
 
 warnings.filterwarnings('ignore')
+
+# Exit code for GPU errors - signals parent process to handle GPU failure
+GPU_ERROR_EXIT_CODE = 100
+
+
+def _check_gpu_health(device: str) -> bool:
+    """
+    Verify GPU is still functioning correctly.
+
+    Performs a simple tensor computation with known result to detect GPU driver crashes
+    that may not raise exceptions but produce garbage data.
+
+    Parameters
+    ----------
+    device : str
+        Device string ('cuda' or 'cpu').
+
+    Returns
+    -------
+    bool
+        True if GPU is healthy or device is CPU, False if GPU appears corrupted.
+    """
+    if device != 'cuda':
+        return True
+    try:
+        test = torch.tensor([1.0, 2.0, 3.0], device='cuda')
+        result = (test * 2).sum().item()
+        return abs(result - 12.0) < 0.001
+    except Exception:
+        return False
 
 
 def _find_frame_pairs(frames_dir: Path, depth_dir: Path) -> List[Tuple[Path, Path, str]]:
@@ -272,6 +303,13 @@ def main() -> None:
 
             rgb, depth, frame_num, frame_path, depth_path = item
             pbar.set_postfix_str(f'Frame: {extract_frame_number(frame_path)}')
+
+            # Check GPU health before processing to detect driver crashes early
+            if not _check_gpu_health(device):
+                print('\nERROR: GPU health check failed - driver may have crashed')
+                stop_loader.set()
+                pbar.close()
+                sys.exit(GPU_ERROR_EXIT_CODE)
 
             sbs = generator.process_frame(rgb, depth, params)
 
