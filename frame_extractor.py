@@ -54,7 +54,14 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
     # Check if frames already exist
     existing_frames = list(frames_dir.glob('frame_*.png'))
     if existing_frames:
-        print(f'WARNING: {len(existing_frames)} frames already exist in {frames_dir}')
+        print(f'INFO: {len(existing_frames)} frames already exist in {frames_dir}')
+
+        # Non-interactive mode (e.g., called from orchestrator): skip extraction
+        if not sys.stdin.isatty():
+            print('Non-interactive mode: Skipping extraction, using existing frames.')
+            return True
+
+        # Interactive mode: ask user
         response = input('Continue and overwrite? [y/N]: ').strip().lower()
         if response != 'y':
             print('Aborted.')
