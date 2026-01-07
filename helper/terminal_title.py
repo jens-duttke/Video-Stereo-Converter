@@ -8,23 +8,35 @@ Works on Windows, Linux, and macOS without third-party dependencies.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 
-def set_terminal_title() -> None:
+def set_terminal_title(title: str | None = None) -> None:
     """
-    Set terminal window title to script name and arguments.
+    Set terminal window title.
 
-    Sets the console/terminal title to show the script filename
-    followed by all command-line arguments (e.g., "script.py arg1 arg2").
+    If no title is provided, uses the script name and arguments.
+    Does nothing if DISABLE_TERMINAL_TITLE environment variable is set.
 
+    Parameters
+    ----------
+    title : str | None
+        Custom title to set. If None, uses "script.py arg1 arg2" format.
+
+    Notes
+    -----
     - Windows: Uses kernel32.SetConsoleTitleW
     - Linux/macOS: Uses ANSI escape sequence OSC 0
     """
-    script_name = Path(sys.argv[0]).name
-    args = ' '.join(sys.argv[1:])
-    title = f'{script_name} {args}'.strip()
+    if os.environ.get('DISABLE_TERMINAL_TITLE'):
+        return
+
+    if title is None:
+        script_name = Path(sys.argv[0]).name
+        args = ' '.join(sys.argv[1:])
+        title = f'{script_name} {args}'.strip()
 
     if sys.platform == 'win32':
         import ctypes
