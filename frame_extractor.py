@@ -62,7 +62,13 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
             return True
 
         # Interactive mode: ask user
-        response = input('Continue and overwrite? [y/N]: ').strip().lower()
+        try:
+            response = input('Continue and overwrite? [y/N]: ').strip().lower()
+        except EOFError:
+            # stdin closed (e.g., subprocess with DEVNULL) - treat as non-interactive
+            print('Non-interactive mode: Skipping extraction, using existing frames.')
+            return True
+
         if response != 'y':
             print('Aborted.')
             return False
