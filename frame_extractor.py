@@ -56,22 +56,22 @@ def extract_frames(workflow_path: Path, config: dict) -> bool:
     if existing_frames:
         print(f'INFO: {len(existing_frames)} frames already exist in {frames_dir}')
 
-        # Non-interactive mode (e.g., called from orchestrator): skip extraction
+        # Non-interactive mode (e.g., called from orchestrator): overwrite frames
+        # This happens when process was restarted after crash, so re-extraction is intended
         if not sys.stdin.isatty():
-            print('Non-interactive mode: Skipping extraction, using existing frames.')
-            return True
+            print('Non-interactive mode: Overwriting existing frames.')
+        else:
+            # Interactive mode: ask user
+            try:
+                response = input('Continue and overwrite? [y/N]: ').strip().lower()
+            except EOFError:
+                # stdin closed (e.g., subprocess with DEVNULL) - treat as non-interactive
+                print('Non-interactive mode: Overwriting existing frames.')
+                response = 'y'
 
-        # Interactive mode: ask user
-        try:
-            response = input('Continue and overwrite? [y/N]: ').strip().lower()
-        except EOFError:
-            # stdin closed (e.g., subprocess with DEVNULL) - treat as non-interactive
-            print('Non-interactive mode: Skipping extraction, using existing frames.')
-            return True
-
-        if response != 'y':
-            print('Aborted.')
-            return False
+            if response != 'y':
+                print('Aborted.')
+                return False
 
     # Try to get frame count for progress bar
     print(f'Analyzing video: {input_video.name}')
