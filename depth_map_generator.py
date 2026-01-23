@@ -28,6 +28,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import onnxruntime as ort
+from huggingface_hub import hf_hub_download
 from tqdm import tqdm
 
 from helper.config_manager import ConfigError, get_path, load_config
@@ -35,7 +36,32 @@ from helper.cv2_utils import suppress_cv2_logging
 from helper.frame_utils import extract_frame_number
 
 
-MODEL_PATH = './models/depthpro_1536x1536_bs1_fp16_opset21_optimized.onnx'
+HUGGINGFACE_REPO_ID = 'Jens-Duttke/DepthPro-ONNX-HighPerf'
+HUGGINGFACE_MODEL_FILENAME = 'depthpro_1536x1536_bs1_fp16_opset21_optimized.onnx'
+
+
+def _get_model_path() -> str:
+    """
+    Get path to depth estimation model, downloading from HuggingFace if needed.
+
+    Returns
+    -------
+    str
+        Path to the ONNX model file.
+
+    Raises
+    ------
+    RuntimeError
+        If model download fails.
+    """
+    try:
+        model_path = hf_hub_download(
+            repo_id=HUGGINGFACE_REPO_ID,
+            filename=HUGGINGFACE_MODEL_FILENAME
+        )
+        return model_path
+    except Exception as e:
+        raise RuntimeError(f'Failed to download model from HuggingFace: {e}') from e
 
 
 def _preprocess_single(img: np.ndarray, target_height: int, target_width: int) -> np.ndarray:
@@ -267,8 +293,10 @@ def main() -> None:
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(MODEL_PATH):
-        print(f'ERROR: Model not found: {MODEL_PATH}')
+    try:
+        model_path = _get_model_path()
+    except RuntimeError as e:
+        print(f'ERROR: {e}')
         return
 
     # Setup ONNX session
@@ -287,7 +315,7 @@ def main() -> None:
         providers = [p for p in gpu_priority if p in available]
         providers.append('CPUExecutionProvider')
 
-    session = ort.InferenceSession(MODEL_PATH, sess_options=sess_options, providers=providers)
+    session = ort.InferenceSession(model_path, sess_options=sess_options, providers=providers)
 
     input_name = session.get_inputs()[0].name
     output_name = session.get_outputs()[0].name

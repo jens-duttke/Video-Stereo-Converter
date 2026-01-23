@@ -25,7 +25,7 @@ python -m venv .
 Scripts\activate
 
 # Install required packages
-pip install onnxruntime-directml numpy opencv-python tqdm kornia
+pip install onnxruntime-directml numpy opencv-python tqdm kornia huggingface_hub
 ```
 
 ### Optional: AMD ROCm Support for Windows
