@@ -207,6 +207,9 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
     """
     Create a video from a frame sequence with progress bar.
 
+    Uses atomic write pattern: writes to .tmp file first, then renames on success.
+    This ensures incomplete chunks are never mistaken for complete ones.
+
     Parameters
     ----------
     frames : list
@@ -232,6 +235,9 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
     start_frame_num = frames[0][0]
     input_dir = frames[0][1].parent
 
+    # Use temporary file for atomic write
+    temp_path = output_path.with_suffix('.mkv.tmp')
+
     cmd = [
         'ffmpeg',
         '-y',
@@ -243,7 +249,7 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
         '-preset', preset,
         '-crf', str(crf),
         '-pix_fmt', 'yuv420p10le',
-        str(output_path)
+        str(temp_path)  # Write to temp file
     ]
 
     print(f'  Creating video: {output_path.name}')
@@ -276,13 +282,16 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
             print('ERROR: ffmpeg failed!')
             error_text = ''.join(stderr_output[-20:])
             print(f'stderr: {error_text[-500:]}')
-            _cleanup_partial_video(output_path)
+            _cleanup_partial_video(temp_path)
             return False
 
-        if not output_path.exists() or output_path.stat().st_size == 0:
+        if not temp_path.exists() or temp_path.stat().st_size == 0:
             print('ERROR: Video file was not created or is empty!')
-            _cleanup_partial_video(output_path)
+            _cleanup_partial_video(temp_path)
             return False
+
+        # Atomic rename: temp file -> final file
+        temp_path.rename(output_path)
 
         print(f'  Video created: {output_path.stat().st_size / (1024*1024):.1f} MB')
         return True
@@ -296,14 +305,14 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
-        _cleanup_partial_video(output_path)
+        _cleanup_partial_video(temp_path)
         raise  # Re-raise to allow main() to handle it
 
     except Exception as e:
         print(f'\nERROR: Unexpected error during encoding: {e}')
         if process:
             process.terminate()
-        _cleanup_partial_video(output_path)
+        _cleanup_partial_video(temp_path)
         return False
 
 
