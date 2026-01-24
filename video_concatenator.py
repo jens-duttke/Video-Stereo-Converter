@@ -133,6 +133,23 @@ def _validate_framerates(videos: List[Tuple[int, int, Path]]) -> Tuple[bool, str
     return True, first_framerate
 
 
+def _cleanup_partial_video(output_path: Path) -> None:
+    """
+    Delete partial/incomplete video file if it exists.
+
+    Parameters
+    ----------
+    output_path : Path
+        Path to the video file to delete.
+    """
+    if output_path.exists():
+        try:
+            output_path.unlink()
+            print(f'\nCleaned up partial video file: {output_path.name}')
+        except OSError as e:
+            print(f'\nWarning: Could not delete partial video file: {e}')
+
+
 def _concatenate_videos(
     videos: List[Tuple[int, int, Path]],
     output_path: Path,
@@ -142,6 +159,9 @@ def _concatenate_videos(
 ) -> bool:
     """
     Concatenate videos using ffmpeg concat demuxer.
+
+    Uses atomic write pattern: writes to .tmp file first, then renames on success.
+    This ensures incomplete output is never mistaken for complete video.
 
     Parameters
     ----------
@@ -171,6 +191,9 @@ def _concatenate_videos(
         frame_duration = 1.0 / framerate if framerate else 0.001
     else:
         frame_duration = 0.001
+
+    # Use temporary file for atomic write
+    temp_output = output_path.with_suffix(output_path.suffix + '.tmp')
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -204,7 +227,7 @@ def _concatenate_videos(
             cmd.extend(['-c:a', 'copy'])
 
         cmd.extend(['-c:v', 'copy'])
-        cmd.append(str(output_path))
+        cmd.append(str(temp_output))  # Write to temp file
 
         print(f'Concatenating {len(videos)} video(s)...')
         if is_overlapping:
@@ -225,41 +248,67 @@ def _concatenate_videos(
         if total_duration <= 0:
             total_duration = 0.1
 
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+        process = None
+        try:
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
-        stderr_output = []
-        current_time = 0.0
+            stderr_output = []
+            current_time = 0.0
 
-        with tqdm(total=total_duration, unit='s', bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}s [{elapsed}]', mininterval=0.5) as pbar:
-            for line in process.stderr:
-                stderr_output.append(line)
-                time_match = re.search(r'time=(\d+):(\d+):(\d+\.\d+)', line)
-                if time_match:
-                    hours = int(time_match.group(1))
-                    minutes = int(time_match.group(2))
-                    seconds = float(time_match.group(3))
-                    new_time = hours * 3600 + minutes * 60 + seconds
-                    if new_time > current_time:
-                        delta = new_time - current_time
-                        # Don't update past total to avoid issues
-                        if current_time + delta <= total_duration + 1:
-                            pbar.update(delta)
-                        current_time = new_time
+            with tqdm(total=total_duration, unit='s', bar_format='{l_bar}{bar}| {n:.1f}/{total:.1f}s [{elapsed}]', mininterval=0.5) as pbar:
+                for line in process.stderr:
+                    stderr_output.append(line)
+                    time_match = re.search(r'time=(\d+):(\d+):(\d+\.\d+)', line)
+                    if time_match:
+                        hours = int(time_match.group(1))
+                        minutes = int(time_match.group(2))
+                        seconds = float(time_match.group(3))
+                        new_time = hours * 3600 + minutes * 60 + seconds
+                        if new_time > current_time:
+                            delta = new_time - current_time
+                            # Don't update past total to avoid issues
+                            if current_time + delta <= total_duration + 1:
+                                pbar.update(delta)
+                            current_time = new_time
 
-        process.wait()
+            process.wait()
 
-        if process.returncode != 0:
-            print('ERROR: ffmpeg failed!')
-            error_text = ''.join(stderr_output[-20:])
-            print(f'stderr: {error_text[-1000:]}')
+            if process.returncode != 0:
+                print('ERROR: ffmpeg failed!')
+                error_text = ''.join(stderr_output[-20:])
+                print(f'stderr: {error_text[-1000:]}')
+                _cleanup_partial_video(temp_output)
+                return False
+
+            if not temp_output.exists() or temp_output.stat().st_size == 0:
+                print('ERROR: Output file was not created or is empty!')
+                _cleanup_partial_video(temp_output)
+                return False
+
+            # Atomic rename: temp file -> final file
+            temp_output.rename(output_path)
+
+            print(f'Video created: {output_path.stat().st_size / (1024*1024):.1f} MB')
+            return True
+
+        except KeyboardInterrupt:
+            print('\n\nConcatenation interrupted by user!')
+            if process:
+                try:
+                    process.terminate()
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+            _cleanup_partial_video(temp_output)
+            raise  # Re-raise to allow main() to handle it
+
+        except Exception as e:
+            print(f'\nERROR: Unexpected error during concatenation: {e}')
+            if process:
+                process.terminate()
+            _cleanup_partial_video(temp_output)
             return False
-
-        if not output_path.exists() or output_path.stat().st_size == 0:
-            print('ERROR: Output file was not created or is empty!')
-            return False
-
-        print(f'Video created: {output_path.stat().st_size / (1024*1024):.1f} MB')
-        return True
 
 
 def main():
