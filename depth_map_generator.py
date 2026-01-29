@@ -267,6 +267,7 @@ def main() -> None:
     parser.add_argument('--start-frame', type=int, default=None, help='First frame to process (inclusive)')
     parser.add_argument('--end-frame', type=int, default=None, help='Last frame to process (inclusive)')
     parser.add_argument('--cpu', action='store_true', help='Force CPU inference (default auto-detects GPU)')
+    parser.add_argument('--no-interactive', action='store_true', help='Exit on error instead of waiting for user input (for orchestrator)')
 
     args = parser.parse_args()
 
@@ -415,6 +416,10 @@ def main() -> None:
                             time.sleep(60)
 
                 if not success:
+                    if args.no_interactive:
+                        print('\nERROR: Failed to write depth map. Exiting (non-interactive mode).')
+                        stop_loader.set()
+                        break
                     print(
                         '\nERROR: Failed to write depth map.\n'
                         'Please resolve the storage issue and press any key to retry.'

@@ -130,6 +130,7 @@ def main() -> None:
 
     parser.add_argument('workflow_path', type=Path, help='Path to workflow directory containing config.json')
     parser.add_argument('--cpu', action='store_true', help='Force CPU processing')
+    parser.add_argument('--no-interactive', action='store_true', help='Exit on error instead of waiting for user input (for orchestrator)')
 
     args = parser.parse_args()
 
@@ -259,6 +260,10 @@ def main() -> None:
                             time.sleep(60)
 
                 if not success:
+                    if args.no_interactive:
+                        print('\nERROR: Failed to write output file. Exiting (non-interactive mode).')
+                        stop_loader.set()
+                        break
                     print(
                         '\nERROR: Failed to write output file.\n'
                         'Please resolve the storage issue and press any key to retry.'
