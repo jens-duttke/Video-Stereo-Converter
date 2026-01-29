@@ -354,7 +354,7 @@ class ControlPanel:
         param_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
         self._create_slider(param_frame, 0, 'Max Disparity', self.max_disparity, 5, 100, 0.5, 'Pixel displacement (14-60 optimal)')
-        self._create_slider(param_frame, 1, 'Convergence', self.convergence, -50, 50, 1.0, 'Focal plane shift (+closer, -further)')
+        self._create_slider(param_frame, 1, 'Convergence', self.convergence, -50, 50, 1.0, 'Focal plane shift (-further, +closer)')
         self._create_slider(param_frame, 2, 'Super Sampling', self.super_sampling, 1.0, 4.0, 0.1, 'Internal upscale factor (1.0-3.0 optimal)')
         self._create_slider(param_frame, 3, 'Edge Softness', self.edge_softness, 0, 30, 0.5, 'Depth edge softening (0-30)')
         self._create_slider(param_frame, 4, 'Artifact Smoothing', self.artifact_smoothing, 0, 5, 0.1, 'Warping artifact smoothing (0-5)')
