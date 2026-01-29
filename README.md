@@ -1,4 +1,4 @@
-1# Video Stereo Converter
+# Video Stereo Converter
 
 Convert 2D video to 3D stereoscopic side-by-side format using a [performance-optimized ONNX version](https://huggingface.co/Jens-Duttke/DepthPro-ONNX-HighPerf) of Apple's [DepthPro](https://huggingface.co/apple/DepthPro) depth estimation model (optimized as ONNX for DirectML). Developed and tested on Windows.
 
@@ -10,11 +10,11 @@ Convert 2D video to 3D stereoscopic side-by-side format using a [performance-opt
 - Interactive settings tester with config save functionality
 - Built-in disk space management
 
-![Workflow Orchestrator in action](https://raw.githubusercontent.com/jens-duttke/Video-Stereo-Converter/main/assets/screenshot1.png)
+![Workflow Orchestrator in action](assets/screenshot1.png)
 
-![SBS Tester in action](https://raw.githubusercontent.com/jens-duttke/Video-Stereo-Converter/main/assets/screenshot2.jpg)
+![SBS Tester in action](assets/screenshot2.jpg)
 
-![Converted example video](https://raw.githubusercontent.com/jens-duttke/Video-Stereo-Converter/main/assets/majestic-aerial-view-of-a-historic-castle_stereo.mp4)
+<video src="assets/majestic-aerial-view-of-a-historic-castle_stereo.mp4" controls width="100%"></video>
 
 *Example clip from [Pexels](https://pexels.com) by _ MARROS _ ([Historic Castle](https://www.pexels.com/video/majestic-aerial-view-of-a-historic-castle-33250829/))*
 
