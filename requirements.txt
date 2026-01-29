@@ -1,0 +1,7 @@
+numpy
+opencv-python
+tqdm
+kornia
+huggingface_hub
+psutil
+rich
