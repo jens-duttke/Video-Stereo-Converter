@@ -10,11 +10,17 @@ Convert 2D video to 3D stereoscopic side-by-side format using a [performance-opt
 - Interactive settings tester with config save functionality
 - Built-in disk space management
 
+### Workflow Orchestrator
+
 ![Workflow Orchestrator in action](assets/screenshot1.png)
+
+### SBS Tester
 
 ![SBS Tester in action](assets/screenshot2.jpg)
 
-<video src="assets/majestic-aerial-view-of-a-historic-castle_stereo.mp4" controls width="100%"></video>
+### Example Clip
+
+[![SBS Example Clip](assets/sbs_000540.png)](assets/majestic-aerial-view-of-a-historic-castle_stereo.mp4)
 
 *Example clip from [Pexels](https://pexels.com) by _ MARROS _ ([Historic Castle](https://www.pexels.com/video/majestic-aerial-view-of-a-historic-castle-33250829/))*
 
