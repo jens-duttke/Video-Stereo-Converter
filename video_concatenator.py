@@ -227,6 +227,7 @@ def _concatenate_videos(
             cmd.extend(['-c:a', 'copy'])
 
         cmd.extend(['-c:v', 'copy'])
+        cmd.extend(['-f', 'matroska'])  # Explicit format for .tmp extension
         cmd.append(str(temp_output))  # Write to temp file
 
         print(f'Concatenating {len(videos)} video(s)...')

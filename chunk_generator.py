@@ -249,6 +249,7 @@ def _create_video_clip(frames: List[Tuple[int, Path]], output_path: Path, framer
         '-preset', preset,
         '-crf', str(crf),
         '-pix_fmt', 'yuv420p10le',
+        '-f', 'matroska',  # Explicit format for .tmp extension
         str(temp_path)  # Write to temp file
     ]
 
