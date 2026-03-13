@@ -163,12 +163,22 @@ def _build_live_display(state: OrchestratorState) -> Group:
 
 
 def _get_disk_space_gb(path: Path) -> float:
-    """Get free disk space in GB for the given path."""
+    """Get free disk space in GB for the given path.
+
+    Falls back to the drive root if the specific path is not accessible.
+    Returns -1.0 if disk space cannot be determined at all (caller should
+    skip the check rather than blocking processes).
+    """
     try:
         usage = psutil.disk_usage(str(path))
         return usage.free / (1024 ** 3)
     except (OSError, FileNotFoundError):
-        return 0.0
+        # Path may not exist yet — fall back to drive root
+        try:
+            usage = psutil.disk_usage(str(path.anchor))
+            return usage.free / (1024 ** 3)
+        except (OSError, FileNotFoundError):
+            return -1.0
 
 
 def _format_timestamp() -> str:
@@ -884,7 +894,14 @@ async def _start_process(state: OrchestratorState, workflow_path: str, step_name
     # Check disk space
     path = Path(workflow_path)
     free_space = _get_disk_space_gb(path.parent)
-    if free_space < DISK_SPACE_THRESHOLD_GB:
+    if free_space < 0:
+        # Could not determine disk space — log but do NOT block
+        async with state.console_lock:
+            state.log_messages.append(
+                f'{_format_timestamp()} [yellow]WARNING[/yellow]: Could not determine disk space '
+                f'for {path.parent}, skipping check'
+            )
+    elif free_space < DISK_SPACE_THRESHOLD_GB:
         async with state.console_lock:
             state.log_messages.append(
                 f'{_format_timestamp()} [red]WARNING[/red]: Low disk space ({free_space:.1f} GB), '
