@@ -24,7 +24,8 @@ Convert 2D video to 3D stereoscopic side-by-side format using a [performance-opt
 
 *Example clip from [Pexels](https://pexels.com) by _ MARROS _ ([Historic Castle](https://www.pexels.com/video/majestic-aerial-view-of-a-historic-castle-33250829/))*
 
-Watch your converted videos with the free [SBS Video Player](https://www.duttke.de/sbs-video-player/) - a browser-based 3D media player for glasses-free displays. No installation required, fully local processing, complete privacy.
+> [!TIP]
+> Watch your converted videos with the free [SBS Video Player](https://www.duttke.de/sbs-video-player/) - a browser-based 3D media player for glasses-free displays. No installation required, fully local processing, complete privacy.
 
 ## Quick Start
 
@@ -355,11 +356,13 @@ Send your results to github@duttke.de
 
 ### Disk Space
 
-The conversion pipeline creates large amounts of intermediate data (~5 GB per 1000 frames at 1080p). Plan accordingly and consider processing in chunks. The workflow orchestrator handles disk space management automatically between steps.
+> [!WARNING]
+> The conversion pipeline creates large amounts of intermediate data (~5 GB per 1000 frames at 1080p). Plan accordingly and consider processing in chunks. The workflow orchestrator handles disk space management automatically between steps.
 
 ### Resumable Processing
 
-All scripts automatically skip already-processed files, making it safe to interrupt and resume processing at any time.
+> [!NOTE]
+> All scripts automatically skip already-processed files, making it safe to interrupt and resume processing at any time.
 
 ### Script Reference
 
