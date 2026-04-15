@@ -25,7 +25,7 @@ Convert 2D video to 3D stereoscopic side-by-side format using a [performance-opt
 *Example clip from [Pexels](https://pexels.com) by _ MARROS _ ([Historic Castle](https://www.pexels.com/video/majestic-aerial-view-of-a-historic-castle-33250829/))*
 
 > [!TIP]
-> Watch your converted videos with the free [SBS Video Player](https://www.duttke.de/sbs-video-player/) - a browser-based 3D media player for glasses-free displays. No installation required, fully local processing, complete privacy.
+> **Watch your converted videos in 3D**: [Oku3D](https://oku3d.com) is a free video player with native SBS, Top-Bottom, VR180 and VR360 stereo playback - plus real-time AI 2D-to-3D conversion for any video. Works on AMD, Intel and NVIDIA GPUs, completely free.
 
 ## Quick Start
 
