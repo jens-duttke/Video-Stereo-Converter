@@ -1,5 +1,18 @@
 # Video Stereo Converter
 
+> [!IMPORTANT]
+> ### Skip the pipeline: turn any 2D video into a 3D video file with [Oku3D](https://oku3d.com)
+>
+> I built [**Oku3D**](https://oku3d.com), a free desktop app that does the job of this repository without Python, without a command line and without gigabytes of intermediate frames on your disk. **Since version 4.0 it saves the 3D conversion as a video file.**
+>
+> - **Ctrl+S and done:** export as MP4 or MKV in H.264 or 10-bit H.265, as Full SBS, Half SBS, Half Top-Bottom or anaglyph. HDR films stay HDR.
+> - **See it before you export it:** the AI conversion runs live while the video plays, and the export dialog previews the result.
+> - **Any GPU:** AMD, Intel and NVIDIA, on Windows, Linux and Apple Silicon Macs.
+> - **Watch it in 3D anywhere:** 3D TVs and projectors, VR headsets, glasses-free 3D displays, XREAL and other video glasses.
+> - **Free, private, offline:** no account, no subscription, no watermark, no upload. The depth models download once and run on your machine.
+>
+> **[Download Oku3D for free](https://oku3d.com)**
+
 Convert 2D video to 3D stereoscopic side-by-side format using a [performance-optimized ONNX version](https://huggingface.co/Jens-Duttke/DepthPro-ONNX-HighPerf) of Apple's [DepthPro](https://huggingface.co/apple/DepthPro) depth estimation model (optimized as ONNX for DirectML). Developed and tested on Windows.
 
 ## Features
